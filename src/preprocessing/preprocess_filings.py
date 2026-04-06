@@ -28,7 +28,7 @@ from tqdm import tqdm
 # ── Paths ─────────────────────────────────────────────────────────────────────
 BASE_DIR    = Path(__file__).resolve().parents[2]
 IN_DIR      = BASE_DIR / "data" / "raw" / "filings"
-OUT_DIR     = BASE_DIR / "data" / "processed"
+OUT_DIR     = BASE_DIR / "data" / "processed" / "filings"
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 
 DUP_LOG     = OUT_DIR / "duplicates.log"
