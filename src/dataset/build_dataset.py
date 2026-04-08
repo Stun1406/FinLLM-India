@@ -97,6 +97,32 @@ def _load_transcripts() -> list[dict]:
     return rows
 
 
+def _load_news() -> list[dict]:
+    src_dir = PROC_DIR / "news"
+    rows = []
+    txts = sorted(src_dir.glob("ET_*.txt"))
+    for txt in tqdm(txts, desc="News       ", unit="doc"):
+        json_path = txt.with_suffix(".json")
+        if not json_path.exists():
+            continue
+        with open(json_path, encoding="utf-8") as f:
+            meta = json.load(f)
+        text = txt.read_text(encoding="utf-8", errors="replace").strip()
+        wc = len(text.split())
+        if wc < MIN_WORDS:
+            continue
+        rows.append({
+            "text":       text,
+            "source":     "news",
+            "doc_type":   "news_article",
+            "date":       meta.get("date", ""),
+            "ticker":     "",
+            "title":      meta.get("title", ""),
+            "word_count": wc,
+        })
+    return rows
+
+
 def _load_sebi() -> list[dict]:
     src_dir = PROC_DIR / "sebi"
     rows = []
@@ -135,8 +161,9 @@ def main() -> None:
     filings     = _load_filings()
     transcripts = _load_transcripts()
     sebi        = _load_sebi()
+    news        = _load_news()
 
-    all_rows = filings + transcripts + sebi
+    all_rows = filings + transcripts + sebi + news
 
     df = pd.DataFrame(all_rows)
 
@@ -147,7 +174,7 @@ def main() -> None:
 
     # ── Report ────────────────────────────────────────────────────────────────
     source_stats = {}
-    for src in ("filings", "transcripts", "sebi"):
+    for src in ("filings", "transcripts", "sebi", "news"):
         sub = df[df["source"] == src]
         source_stats[src] = {
             "docs":       int(len(sub)),
